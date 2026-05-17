@@ -15,8 +15,13 @@ repositories {
 
 def runeliteVersion = 'latest.release'
 
+configurations {
+		runeliteClient
+}
+
 dependencies {
 		compileOnly group: 'net.runelite', name: 'client', version: runeliteVersion
+		runeliteClient group: 'net.runelite', name: 'client', version: runeliteVersion
 
 		compileOnly 'org.projectlombok:lombok:1.18.30'
 		annotationProcessor 'org.projectlombok:lombok:1.18.30'
@@ -37,16 +42,11 @@ task runClient(type: JavaExec) {
 		group = 'runelite'
 		description = 'Launch RuneLite with the plugin loaded'
 
-		classpath = sourceSets.main.runtimeClasspath
+		classpath = configurations.runeliteClient + sourceSets.main.output
 
 		mainClass = 'net.runelite.client.RuneLite'
 
-		args '--developer-mode', '--no-world-map'
+		args '--developer-mode'
 
-		doFirst {
-					def agentJar = configurations.runtimeClasspath.find { it.name.contains('client') && it.name.endsWith('.jar') }
-					if (agentJar) {
-									jvmArgs "-javaagent:${agentJar}"
-					}
-		}
+		jvmArgs "-javaagent:${configurations.runeliteClient.find { it.name.contains('client') }}"
 }
